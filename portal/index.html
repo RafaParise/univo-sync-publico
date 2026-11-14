@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parise Hub</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;max-width:640px;margin:2rem auto;padding:0 1rem}
+  a{display:block;background:#1e293b;color:#38bdf8;text-decoration:none;padding:.9rem 1rem;border-radius:10px;margin:.5rem 0}
+  small{color:#94a3b8}
+</style>
+</head>
+<body>
+<h1>Parise Hub</h1>
+<script>
+  // Os links usam o próprio domínio de acesso (funciona em LAN e via Tailscale)
+  const base = location.hostname;
+  const items = [
+    ['parise-core','IA / API central'],['arena','Launcher retrô'],
+    ['files','Arquivos'],['status','Monitoramento'],['dns','AdGuard (DNS)']
+  ];
+  document.body.insertAdjacentHTML('beforeend', items.map(([s,d]) =>
+    `<a href="http://${s}.${base}">${s} <small>— ${d}</small></a>`).join(''));
+</script>
+</body>
+</html>

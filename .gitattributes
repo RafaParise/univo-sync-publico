@@ -1,0 +1,7 @@
+# scripts que rodam no Termux do A12: fim de linha do Linux sempre (13/11/2026)
+scripts/ligar-pc text eol=lf
+scripts/ligar_pc.py text eol=lf
+scripts/sentinela_a12.py text eol=lf
+scripts/fortigate_api.py text eol=lf
+scripts/compartilhar text eol=lf
+scripts/proxy_compartilhado.py text eol=lf

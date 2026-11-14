@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Wrapper do docker compose: inclui automaticamente projects/*/compose.yml
+set -euo pipefail
+cd "$(dirname "$0")/.."
+args=(-f docker-compose.yml)
+for f in projects/*/compose.yml; do
+  [[ -e "$f" && "$f" != projects/_template/* ]] && args+=(-f "$f")
+done
+exec docker compose "${args[@]}" "$@"

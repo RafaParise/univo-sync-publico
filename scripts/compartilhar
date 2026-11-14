@@ -1,0 +1,15 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# compartilhar - a internet de casa (pela VPN do Tailscale) para quem esta no hotspot deste celular (13/11/2026).
+#   compartilhar            DNS comum (o padrao)
+#   compartilhar --familia  com o DNS familia da Cloudflare (malware e conteudo adulto bloqueados), so quando pedir
+# Antes, no celular: (1) app do Tailscale > Exit Node > a saida de casa (PC ou A12) e LIGUE "Allow LAN access" (sem
+# isso quem esta no hotspot nao alcanca o proxy); (2) ligue o Roteador Wi-Fi (hotspot) com senha.
+# Quem entra no hotspot: Wi-Fi > a rede > Proxy: Manual > o endereco que aparece abaixo, porta 8888.
+# Codigo: C:\Projetos\parise-sync\scripts\proxy_compartilhado.py (o proxy e' um app do celular, entao passa pela VPN;
+# o hotspot do Android sozinho NAO passa).
+set -u
+PROGRAMA="$HOME/parise-sync/proxy_compartilhado.py"
+if [ ! -f "$PROGRAMA" ]; then echo "falta $PROGRAMA (copie do PC: scripts/proxy_compartilhado.py)"; exit 1; fi
+termux-wake-lock 2>/dev/null   # sem isto o Android pode pausar o Termux com a tela apagada
+trap 'termux-wake-unlock 2>/dev/null' EXIT
+python "$PROGRAMA" "$@"

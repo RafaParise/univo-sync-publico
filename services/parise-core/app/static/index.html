@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<title>parise-core</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:1rem}
+  h1{font-size:1.25rem} a{color:#38bdf8}
+  .card{background:#1e293b;border-radius:10px;padding:.8rem 1rem;margin:.5rem 0}
+  input{width:100%;padding:.6rem;border-radius:8px;border:0;margin:.4rem 0;box-sizing:border-box}
+  small{color:#94a3b8}
+</style>
+</head>
+<body>
+<h1>parise-core</h1>
+<input id="tk" type="password" placeholder="Token (fica só neste aparelho)">
+<div id="out"><small>Informe o token para listar os módulos.</small></div>
+<script>
+const tk = document.getElementById('tk'), out = document.getElementById('out');
+tk.value = localStorage.getItem('pt') || '';
+async function load(){
+  localStorage.setItem('pt', tk.value);
+  try{
+    const r = await fetch('/api/modules',{headers:{'X-Parise-Token':tk.value}});
+    if(!r.ok){out.innerHTML='<small>Token inválido.</small>';return}
+    const m = await r.json();
+    const names = Object.keys(m);
+    out.innerHTML = names.length ? names.map(n =>
+      `<div class="card"><b>${n}</b> <small>${m[n].kind}</small><br>
+       <a href="${m[n].url}">${m[n].url}</a><br><small>${m[n].description||''}</small></div>`).join('')
+      : '<small>Nenhum módulo registrado.</small>';
+  }catch(e){out.innerHTML='<small>Sem conexão com o parise-core.</small>'}
+}
+tk.addEventListener('change', load); if(tk.value) load();
+</script>
+</body>
+</html>

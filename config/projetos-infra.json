@@ -1,0 +1,15 @@
+{
+  "_leia": "Papel de cada projeto na infraestrutura. A lista de projetos vem do REGISTRO (parise-core-windows/bin/projetos.py); aqui só o que é de rede. tipo: web | android | agente | ferramenta | servico. site=true ganha <nome>.dominio no DNS do FortiGate apontando para o HUB_IP.",
+  "dominio": "bancada.lan",
+  "servicos_do_hub": ["parise-core", "arena", "files", "status", "dns"],
+  "projetos": {
+    "arena": {"tipo": "web", "site": true, "nome": "arena", "descricao": "ARENA: launcher retrô servido pela parise-infra (serviço arena)"},
+    "android-casa": {"tipo": "android", "descricao": "Casa-mãe do Galaxy A12 (debloat, rede, ponte do PC)"},
+    "android-vitrine": {"tipo": "android", "descricao": "Vitrine pública do android-embedded"},
+    "windows-embedded": {"tipo": "ferramenta", "descricao": "WinOptimizador"},
+    "parise-core-windows": {"tipo": "agente", "descricao": "Hermes do PC (parise-core-windows)"},
+    "parise-core-android": {"tipo": "agente", "descricao": "Qwen do Termux no A12 (parise-core-android)"},
+    "kit-ia": {"tipo": "ferramenta", "descricao": "OmniRoute e IAs gratuitas (só local: 127.0.0.1)"},
+    "parise-sync": {"tipo": "servico", "descricao": "Rede da bancada e parise-infra"}
+  }
+}

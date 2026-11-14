@@ -1,0 +1,32 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# ligar-pc - liga o PC do Rafael pela rede (Wake-on-LAN) a partir deste A12 (parise-sync, 13/11/2026).
+#   ligar-pc agora | estado | servir-ligar | servir-desligar | servir-estado | registro
+# "servir" abre o endereco http://<este celular no Tailscale>:8000/ligar-pc?chave=... (so Tailscale e o PC).
+# Codigo: C:\Projetos\parise-sync\scripts\ligar_pc.py. Instalar do PC: python scripts\instalar_sentinela_a12.py instalar
+set -u
+PROGRAMA="$HOME/parise-sync/ligar_pc.py"
+BASE="$HOME/.cache/ligar-pc"
+PID="$BASE/servir.pid"
+REG="$BASE/registro"
+mkdir -p "$BASE"
+
+vivo() { [ -f "$PID" ] && kill -0 "$(cat "$PID" 2>/dev/null)" 2>/dev/null; }
+
+case "${1:-estado}" in
+  agora)  python "$PROGRAMA" agora ;;
+  estado) python "$PROGRAMA" estado ;;
+  servir-ligar)
+    if vivo; then echo "o endereco de ligar o PC ja esta no ar"; exit 0; fi
+    [ -f "$REG" ] && tail -n 200 "$REG" > "$REG.novo" 2>/dev/null && mv -f "$REG.novo" "$REG"
+    nohup nice -n 10 python "$PROGRAMA" servir >> "$REG" 2>&1 < /dev/null &
+    echo $! > "$PID"
+    sleep 2
+    if vivo; then echo "endereco de ligar o PC no ar (porta 8000)"; else echo "nao subiu: veja 'ligar-pc registro'"; exit 1; fi ;;
+  servir-desligar)
+    if vivo; then kill "$(cat "$PID")"; fi
+    rm -f "$PID"; echo "endereco de ligar o PC fora do ar" ;;
+  servir-estado)
+    if vivo; then echo "no ar (processo $(cat "$PID"))"; else echo "fora do ar"; fi ;;
+  registro) tail -n 20 "$REG" 2>/dev/null || echo "sem registro ainda" ;;
+  *) sed -n '2,5p' "$0" ;;
+esac

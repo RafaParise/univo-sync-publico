@@ -1,0 +1,16 @@
+# Segredos e dados locais
+.env
+*.local.md
+data/*
+!data/.gitkeep
+
+# Logs (logs/ultimo-restore.conf tem a configuração completa do FortiGate)
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Resumo da telemetria (refeito a cada 5 min; as IAs leem do disco)
+memoria/telemetria/

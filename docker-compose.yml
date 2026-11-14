@@ -1,0 +1,99 @@
+# parise-infra — infraestrutura central (rede doméstica própria)
+# Subir: ./scripts/pc up -d   (pc = wrapper que inclui projects/*/compose.yml)
+
+name: parise-infra
+
+networks:
+  parise:
+    name: parise
+
+services:
+  # Malha Tailscale: acesso remoto seguro (celular, notebook) + exit node + rota da LAN
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    network_mode: host
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices: [/dev/net/tun:/dev/net/tun]
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_HOSTNAME: ${TS_HOSTNAME:-parise-hub}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TS_EXTRA_ARGS: --advertise-exit-node --advertise-routes=${LAN_CIDR:-192.168.0.0/24} --accept-dns=false
+    volumes:
+      - ./data/tailscale:/var/lib/tailscale
+    restart: unless-stopped
+
+  # Proxy reverso: <nome>.${DOMAIN} -> serviço
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    ports: ["80:80"]
+    environment:
+      DOMAIN: ${DOMAIN:-bancada.lan}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./portal:/srv/portal:ro
+      - ./projects:/etc/caddy/projects:ro
+      - ./data/caddy:/data
+    networks: [parise]
+    restart: unless-stopped
+
+  # DNS da casa (resolve *.parise.lan e bloqueia anúncios/rastreadores)
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "3000:3000/tcp"   # painel (escolha a porta 3000 no assistente inicial)
+    volumes:
+      - ./data/adguard/work:/opt/adguardhome/work
+      - ./data/adguard/conf:/opt/adguardhome/conf
+    networks: [parise]
+    restart: unless-stopped
+
+  # IA / API central
+  parise-core:
+    build: ./services/parise-core
+    container_name: parise-core
+    environment:
+      PARISE_TOKEN: ${PARISE_TOKEN}
+      PARISE_DATA: /data
+    volumes:
+      - ./data/parise-core:/data
+    networks: [parise]
+    restart: unless-stopped
+
+  # ARENA: launcher retrô servido na rede (ROMs/arquivos em data/arena)
+  arena:
+    image: nginx:alpine
+    container_name: arena
+    volumes:
+      - ./data/arena:/usr/share/nginx/html:ro
+      - ./services/arena/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [parise]
+    restart: unless-stopped
+
+  # Arquivos (upload/download de qualquer projeto)
+  files:
+    image: filebrowser/filebrowser:latest
+    container_name: files
+    volumes:
+      # Só a pasta de arquivos: data/ inteira exporia a identidade do Tailscale e o .db do Kuma
+      - ./data/files:/srv
+      - ./data/filebrowser:/database
+    environment:
+      FB_DATABASE: /database/filebrowser.db
+    networks: [parise]
+    restart: unless-stopped
+
+  # Monitoramento de todos os serviços
+  status:
+    image: louislam/uptime-kuma:1
+    container_name: status
+    volumes:
+      - ./data/kuma:/app/data
+    networks: [parise]
+    restart: unless-stopped

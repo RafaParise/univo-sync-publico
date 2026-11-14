@@ -1,0 +1,31 @@
+{
+	auto_https off
+}
+
+http://{$DOMAIN} {
+	root * /srv/portal
+	file_server
+}
+
+http://parise-core.{$DOMAIN} {
+	reverse_proxy parise-core:8000
+}
+
+http://arena.{$DOMAIN} {
+	reverse_proxy arena:80
+}
+
+http://files.{$DOMAIN} {
+	reverse_proxy files:80
+}
+
+http://status.{$DOMAIN} {
+	reverse_proxy status:3001
+}
+
+http://dns.{$DOMAIN} {
+	reverse_proxy adguard:3000
+}
+
+# Cada projeto novo traz o próprio projects/<nome>/site.caddy
+import /etc/caddy/projects/*/site.caddy
